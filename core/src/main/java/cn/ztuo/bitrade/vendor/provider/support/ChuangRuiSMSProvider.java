@@ -2,6 +2,14 @@ package cn.ztuo.bitrade.vendor.provider.support;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.aliyuncs.CommonRequest;
+import com.aliyuncs.CommonResponse;
+import com.aliyuncs.DefaultAcsClient;
+import com.aliyuncs.IAcsClient;
+import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.exceptions.ServerException;
+import com.aliyuncs.http.MethodType;
+import com.aliyuncs.profile.DefaultProfile;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
@@ -72,12 +80,27 @@ public class ChuangRuiSMSProvider implements SMSProvider {
 
     @Override
     public MessageResult sendSingleMessage(String mobile, String content) throws Exception {
+//        SmsDTO smsDTO = smsService.getByStatus();
+//        if ("chuangrui".equals(smsDTO.getSmsName())){
+//            return sendMessage(mobile,content,smsDTO);
+//        }else if ("gongxintong".equals(smsDTO.getSmsName())){
+//            return send2Method(mobile,content,smsDTO);
+//        }
+//        return null;
+        // By LvQS:20190620
         SmsDTO smsDTO = smsService.getByStatus();
-        if ("chuangrui".equals(smsDTO.getSmsName())){
-            return sendMessage(mobile,content,smsDTO);
-        }else if ("gongxintong".equals(smsDTO.getSmsName())){
-            return send2Method(mobile,content,smsDTO);
+        if(smsDTO != null){
+            if ("chuangrui".equals(smsDTO.getSmsName())){
+                return sendMessage(mobile,content,smsDTO);
+            }else if ("gongxintong".equals(smsDTO.getSmsName())){
+                return send2Method(mobile,content,smsDTO);
+            }else if("ali".equals(smsDTO.getSmsName())){
+                return sendAliMessage(mobile,content,smsDTO);
+            }
+        } else {
+            return null;
         }
+
         return null;
     }
 
@@ -96,6 +119,38 @@ public class ChuangRuiSMSProvider implements SMSProvider {
         }else if ("gongxintong".equals(smsDTO.getSmsName())){
             return sendByOder(mobile,content,smsDTO);
         }
+        return null;
+    }
+
+    public MessageResult sendAliMessage(String mobile, String content,SmsDTO smsDTO){
+        if(StringUtils.isBlank(mobile) || StringUtils.isBlank(content)){
+            return null;
+        }
+
+        DefaultProfile profile = DefaultProfile.getProfile("default", smsDTO.getKeyId(), smsDTO.getKeySecret());
+        IAcsClient client = new DefaultAcsClient(profile);
+
+        CommonRequest request = new CommonRequest();
+        request.setMethod(MethodType.POST);
+        request.setDomain("dysmsapi.aliyuncs.com");
+        request.setVersion("2017-05-25");
+        request.setAction("SendSms");
+        request.putQueryParameter("PhoneNumbers", mobile);
+        request.putQueryParameter("SignName", smsDTO.getSignId());
+        request.putQueryParameter("TemplateCode", smsDTO.getTemplateId());
+        request.putQueryParameter("TemplateParam", "{\"code\":" + content + "}");
+
+        try {
+            CommonResponse response = client.getCommonResponse(request);
+            System.out.println(response.getData());
+
+            return parseAliMessageResult(response.getData());
+        } catch (ServerException e) {
+            e.printStackTrace();
+        } catch (ClientException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
     
@@ -135,6 +190,21 @@ public class ChuangRuiSMSProvider implements SMSProvider {
         MessageResult mr = new MessageResult(500, "系统错误");
         mr.setCode(Integer.parseInt(parts.getString("code")));
         mr.setMessage(parts.getString("msg"));
+        return mr;
+    }
+
+    private MessageResult parseAliMessageResult(String result) {
+        //返回示例：{"code":"0","msg":"SUCCESS","smUuid":"18863_1_0_15738776414_1_XaOQ74O_1"}
+        // {"Message":"OK","RequestId":"EC9DF5AC-9735-44CC-87FD-59462CF2E643","BizId":"760013261101057456^0","Code":"OK"}
+        JSONObject parts = JSONObject.parseObject(result);
+        MessageResult mr = new MessageResult(500, "系统错误");
+//        mr.setCode(Integer.parseInt(parts.getString("code")));
+//        mr.setMessage(parts.getString("msg"));
+        if("OK".equals(parts.getString("Code"))){
+            mr.setCode(0);
+            mr.setMessage(parts.getString("Message"));
+        }
+
         return mr;
     }
 

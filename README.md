@@ -112,3 +112,20 @@ spring.jpa.hibernate.ddl-auto=update
 1. 20181106 提交项目中缺少的模块
 2. 20181112 开源ZTuoExchange_wallet代码
 3. 20181112 发布ZTuoExchange_操作手册
+
+
+
+## LvQS 2019.06.20
+1、安装jar：
+mvn install:install-file -Dfile=spark-core-2.6.0.jar -DgroupId=com.sparkframework -DartifactId=spark-core -Dversion=2.6.0 -Dpackaging=jar
+mvn install:install-file -Dfile=apns-http2-core-1.3.jar -DgroupId=com.cdeer -DartifactId=apns-http2-core -Dversion=1.3 -Dpackaging=jar
+mvn install:install-file -Dfile=aqmd-netty-2.0.1.jar -DgroupId=com.aqmd -DartifactId=aqmd-netty -Dversion=2.0.1 -Dpackaging=jar
+mvn install:install-file -Dfile=aqmd-netty-api-2.0.1.jar -DgroupId=com.aqmd -DartifactId=aqmd-netty-api -Dversion=2.0.1 -Dpackaging=jar
+mvn install:install-file -Dfile=aqmd-netty-core-2.0.1.jar -DgroupId=com.aqmd -DartifactId=aqmd-netty-core -Dversion=2.0.1 -Dpackaging=jar
+
+2、安装Lombok插件：https://jingyan.baidu.com/article/0a52e3f4e53ca1bf63ed725c.html
+
+3、到项目根目录：
+mvn compile
+(mvn install)
+

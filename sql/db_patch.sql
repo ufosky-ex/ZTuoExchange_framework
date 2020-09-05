@@ -69,6 +69,9 @@ CREATE TABLE `exchange_coin` (
   `max_trading_time` int(11) DEFAULT '0' COMMENT '委托超时自动下架时间，单位为秒，0表示不过期',
   `instrument` varchar(20) DEFAULT NULL COMMENT '交易类型，B2C2特有',
   `min_turnover` decimal(18,8) DEFAULT '0.00000000' COMMENT '最小挂单成交额',
+  `zone` int(11) DEFAULT '0' COMMENT '交易区域',
+  `min_volume` decimal(18,8) DEFAULT '0.00000000' COMMENT '最小下单量，0表示不限制',
+  `mix_volume` decimal(18,8) DEFAULT '0.00000000' COMMENT '最大下单量，0表示不限制',
   PRIMARY KEY (`symbol`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
